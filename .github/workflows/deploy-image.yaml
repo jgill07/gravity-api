@@ -49,3 +49,22 @@ jobs:
         run: |
           SHORT_SHA=${GITHUB_SHA:0:7}
           docker push ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:$SHORT_SHA
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull Api Docker image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
+      - name: Pull Nginx Docker image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:latest
+      - name: Delete existing Api Docker containers
+        run: |
+          docker rm -f gravity-api-income || true
+          docker rm -f gravity-api-expense || true
+      - name: Delete existing Nginx Docker container
+        run: docker rm -f gravity-nginx || true
+      - name: Run Nginx and Api Docker containers
+        run: |
+          docker run -d --name gravity-nginx -p 80:80 ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:latest
+          docker run -d --name gravity-api-income -e api_port=8080 -e api_service=income -e environment=production ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
+          docker run -d --name gravity-api-expense -e api_port=8080 -e api_service=expense -e environment=production ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
