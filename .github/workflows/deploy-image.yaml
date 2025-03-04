@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      SHORT_SHA: ${{ github.sha[0:7] }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,24 +16,36 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Api Docker image
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}
           docker build \
             -t ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest \
-            -t ${{ secrets.DOCKER_USERNAME }}/gravity-api:${{env.SHORT_SHA}} \
+            -t ${{ secrets.DOCKER_USERNAME }}/gravity-api:$SHORT_SHA \
             . -f ./deploy/Dockerfile
       - name: Push Api Docker image (latest)
         run: docker push ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
       - name: Push Api Docker image (commit)
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/gravity-api:${{env.SHORT_SHA}}
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          docker push ${{ secrets.DOCKER_USERNAME }}/gravity-api:$SHORT_SHA
       - name: Build Nginx Docker image
-        run: |          
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          SHORT_SHA=${GITHUB_SHA:0:7}          
           docker build \
             -t ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:latest \
-            -t ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:${{env.SHORT_SHA}} \
+            -t ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:$SHORT_SHA \
             . -f ./deploy/Nginx.dockerfile
       - name: Push Nginx Docker image (latest)
         run: docker push ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:latest
       - name: Push Nginx Docker image (commit)
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:${{env.SHORT_SHA}}
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          docker push ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:$SHORT_SHA
