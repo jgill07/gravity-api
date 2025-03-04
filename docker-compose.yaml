@@ -1,0 +1,43 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./deploy/Nginx.dockerfile
+    develop:
+      watch:
+        - action: rebuild
+          path: ./deploy/nginx.conf
+    ports:
+      - "80:80"
+  incomes:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile
+    develop:
+      watch:
+        - action: rebuild
+          path: ./internal
+        - action: rebuild
+          path: ./cmd
+    environment:
+      - api_port=8080
+      - api_service=income
+      - environment=development
+    depends_on:
+      - nginx
+  expenses:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile
+    develop:
+      watch:
+        - action: rebuild
+          path: ./internal
+        - action: rebuild
+          path: ./cmd
+    environment:
+      - api_port=8080
+      - api_service=expense
+      - environment=development
+    depends_on:
+      - nginx
