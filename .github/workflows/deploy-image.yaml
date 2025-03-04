@@ -61,10 +61,7 @@ jobs:
         run: |
           sudo docker rm -f gravity-api-income || true
           sudo docker rm -f gravity-api-expense || true
-      - name: Delete existing Nginx Docker container
-        run: sudo docker rm -f gravity-nginx || true
       - name: Run Nginx and Api Docker containers
         run: |
-          sudo docker run -d --name gravity-nginx -p 80:80 ${{ secrets.DOCKER_USERNAME }}/gravity-nginx:latest
-          sudo docker run -d --name gravity-api-income -e api_port=8080 -e api_service=income -e environment=production ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
-          sudo docker run -d --name gravity-api-expense -e api_port=8080 -e api_service=expense -e environment=production ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
+          sudo docker run -d --name gravity-api-income -e api_port=8080 -e api_service=income -e environment=production -p 3001:8080 ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
+          sudo docker run -d --name gravity-api-expense -e api_port=8080 -e api_service=expense -e environment=production -p 3002:8080 ${{ secrets.DOCKER_USERNAME }}/gravity-api:latest
